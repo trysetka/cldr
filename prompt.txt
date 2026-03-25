@@ -1,0 +1,68 @@
+study `PLAN.md` — the master plan for dynamic runtime locale loading (7 phases, executed in order. Phase 1 must be first. Read the Design and Data Format Contract sections before any phase.)
+
+Once you've read everything, pick the single most important next step to execute while preserving phase order from the master plan. Use `br` to manage tasks.
+
+Before starting any work make sure to read any required reads mentioned in the plan and any adjacent source files.
+
+Goal
+- Implement dynamic runtime locale loading for ex_cldr, executing one phase at a time with TDD and plan updates.
+
+Task selection + beads workflow (mandatory)
+0) check `progress.txt`
+1) Check for available tasks: run `br ready`
+2) Use `br` to manage the active task (run `br prime` if unsure how)
+3) ONLY DO ONE BEADS TASK AT A TIME:
+   - If a ready task exists: pick the highest-impact/blocking one that matches the current phase and make it active.
+   - If no ready task exists: read the plan/code, identify the biggest execution gap vs the active phase, create a beads task for it, then make it active.
+4) While working, if you notice additional issues or follow-ups related to the runtime locale loading, capture them as beads tasks, but do not start them until the current task is done.
+5) When choosing the next task, prioritize in this order:
+   - architectural decisions and core abstractions
+   - integration points between modules
+   - unknown unknowns and spike work
+   - standard features and implementation
+   - polish, cleanup, and quick wins
+6) Fail fast on risky work. Save easy wins for later.
+
+Execution rules for the active task
+- Preserve phase order from the PLAN.
+- Do not skip ahead from core module work to provider integration until the relevant prior phase is complete.
+- Prefer the smallest correct change that fully satisfies the current plan step.
+- Keep changes small and focused.
+- One logical change per commit.
+- If a task feels too large, break it into smaller subtasks before implementation.
+- Prefer multiple small commits over one large commit.
+- Run feedback loops after each change, not only at the end.
+- Follow TDD strictly: write or update failing tests first, then implement, then refactor.
+- Keep `Cldr.Locale.RuntimeStore` as the single module owning the ETS table and migration; do not scatter cache logic across the codebase.
+- Use existing `Cldr.Locale.Loader` pipeline for loading — do not duplicate JSON decode/transform logic.
+- Provider fallback clauses must delegate to `RuntimeStore.fetch_locale/2` — providers must not read JSON directly.
+- Preserve the compiled function clause fast path for pre-configured locales; zero regression on existing behavior.
+- All error paths return tagged tuples `{:error, reason}`, never raise.
+
+Verification rules
+- Run the tests required by the active phase/sub-plan.
+- Run `mix test --trace` after completing each phase to catch regressions.
+- For Phase 2-4, run the full test suite since backend integration touches shared dispatch paths.
+- For Phase 5 (provider integration), run each provider's test suite in isolation.
+
+Plan maintenance (mandatory)
+- Update the relevant plan checkboxes when a task is completed.
+- Keep the master plan aligned with reality.
+- If implementation reveals a necessary plan correction, update the plan narrowly and explicitly.
+
+Progress logging (mandatory)
+- Logging to `progress.txt` is mandatory. Treat it as the handoff log for the next iteration and keep it current so future work can skip rediscovery.
+- After each completed task, you must append a short entry covering: active beads task id/title, completed task, plan phase reference, key decisions and why, files changed, tests run and result, commit sha (if any), and blockers or next-step notes.
+- Keep entries terse and information-dense; brevity matters more than polish.
+
+Completion behavior
+- If ALL 7 phases are complete and no beads tasks are left:
+  - Run `mix test --trace` one final time.
+  - Verify all plan checkboxes are marked.
+  - If everything passes AND there are no new beads tasks AND no further changes are needed THEN AND ONLY THEN output exactly:
+    <promise>COMPLETE</promise>
+  - If new work items or shortcomings are found DO NOT OUTPUT `<promise>COMPLETE</promise>`
+
+Constraints
+- DO NOT ATTEMPT TO PUSH — you're running in a sandboxed environment
+- DO NOT modify provider packages (ex_cldr_numbers, ex_cldr_dates_times, etc.) until Phase 5 — they are external and changes there require the core RuntimeStore to be stable first.
