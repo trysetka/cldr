@@ -1,0 +1,47 @@
+study `PLAN.md` and read any required documents referenced in each phase
+
+Goal
+You are reviewing the implementation work that was done to satisfy the dynamic runtime locale loading plan.
+
+What to do
+1) Establish scope of the implementation
+- Inspect the full set of changes since the branch diverged (not just the latest commit).
+- Skim commit messages to understand intent and sequencing.
+2) Plan compliance review
+- Map each plan step and acceptance criterion to the concrete code changes that implement it.
+- Call out gaps, deviations, or "looks implemented but doesn't actually satisfy plan" cases.
+- Verify "done" criteria from each phase (including error states, edge cases, and concurrency requirements).
+3) Code quality & risk review (bugs, issues, smells)
+- Correctness: edge cases, nil/empty handling, invariants, race conditions, idempotency.
+- ETS lifecycle: table creation, cleanup, read_concurrency, public vs protected, orphaned entries.
+- :persistent_term: GC impact, stale references, migration ordering, partial failure.
+- GenServer: process lifecycle, trap_exit, restart behavior, message queue buildup.
+- Concurrency: insert_new as mutex, poll-wait timeout, stampede protection, multiple backends isolation.
+- Error handling: clear errors, no silent failures, consistent {:ok, _} / {:error, _} return types.
+- Provider integration: fallback clauses delegate to RuntimeStore, no duplicate JSON logic, correct data shape.
+- Performance: no regression on compiled locale path, ETS lookup overhead acceptable, lazy vs eager loading.
+- Tests: coverage of happy path + key edge cases + concurrency; missing tests called out explicitly.
+- Maintainability: naming, module boundaries, duplication, overly complex functions, dead code.
+4) Produce actionable outcomes
+- For every issue you find, add a beads task (only issues relevant to the runtime locale loading plan).
+  - Each task must include: title, severity (blocker/high/medium/low), expected behavior (per plan), actual behavior, suggested fix, and exact file path(s).
+  - Prefer smaller, fixable tasks over vague "refactor" tasks.
+
+Progress logging (mandatory)
+- After each session, append a concise entry to progress.txt (and commit) so the next person can continue.
+- Each entry must include:
+  - Date/time, branch/commit range reviewed
+  - What you reviewed (areas/files)
+  - Key findings (bullets)
+  - Beads tasks created (IDs/titles)
+  - What remains / next suggested review steps
+
+Output format (your response, included in the progress)
+- "Plan Compliance": phase-by-phase notes (pass/fail/partial) with line references to PLAN.md.
+- "Findings": prioritized list of issues with file references.
+- "Beads Tasks Added": list of tasks you created.
+- "Progress.txt Updated": confirm and summarize what you logged.
+
+Constraints
+- Do not expand scope beyond the PLAN.md phases.
+- Do not silently ignore deviations: either justify with plan text or create a beads task.
