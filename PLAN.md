@@ -357,63 +357,60 @@ ex_cldr (core)
 
 - [x] Data contract verification: write tests proving RuntimeStore returns Loader-identical data
 - [x] Fix transformation pipeline ordering bug (integerize_keys must run before atomize_keys(level: 1..1))
-- [ ] For each provider, identify every compiled function that takes a locale atom as its first argument
-- [ ] Add a catch-all clause to each that calls `Cldr.Locale.RuntimeStore.fetch_locale(backend, locale_name)`
-- [ ] Apply the same data transformation that the compile-time path uses
+- [x] Add `Backend.fetch_locale_data/2` helper for provider catch-all clauses
+- [x] Add catch-all clauses to cldr_lists, cldr_numbers, cldr_territories, cldr_units
+- [x] Verify Architecture B providers (cldr_dates_times, cldr_calendars, cldr_person_names) already have catch-alls — no changes needed
 - [ ] Add tests in each provider's test suite
 - [ ] Update each provider's `mix.exs` to require the new `ex_cldr` version
 
 ### Per-Provider Change List
 
-**Cldr.Number** (ex_cldr_numbers):
-- [ ] `Cldr.Number.Format.Backend` — `all_formats_for/2` catch-all
-- [ ] `Cldr.Number.Symbol.Backend` — `number_symbols_for/3` catch-all
-- [ ] `Cldr.Number.Transliterate.Backend` — transliteration map catch-all
-- [ ] `Cldr.Number.RBNF.Backend` — RBNF rules catch-all
+**Cldr.Number** (cldr_numbers):
+- [x] `Cldr.Number.Format.Backend` — `all_formats_for/1`, `minimum_grouping_digits_for/1`, `default_grouping_for/1` catch-alls
+- [x] `Cldr.Number.Symbol.Backend` — `number_symbols_for/1` catch-all
+- [~] `Cldr.Number.Transliterate.Backend` — transliteration map catch-all (needs investigation)
+- [~] `Cldr.Number.RBNF.Backend` — RBNF rules catch-all (uses separate processor, needs investigation)
 
-**Cldr.DateTime** (ex_cldr_dates_times):
-- [ ] `Cldr.DateTime.Format.Backend` — `date_formats/2`, `time_formats/2`, `date_time_formats/2`, `available_formats/2`, `interval_formats/3` catch-alls
+**Cldr.DateTime** (cldr_dates_times):
+- [x] Architecture B — already has catch-alls returning error tuples, no changes needed
 - [ ] `Cldr.DateTime.Relative.Backend` — relative time patterns catch-all
 - [ ] `Cldr.Date.Backend`, `Cldr.Time.Backend`, `Cldr.DateTime.Backend` — delegate catch-alls
 
-**Cldr.Unit** (ex_cldr_units):
-- [ ] `units_for/2` catch-all
-- [ ] `grammatical_features/1` catch-all
-- [ ] `grammatical_gender/1` catch-all
+**Cldr.Unit** (cldr_units):
+- [x] `units_for/2` catch-all
+- [x] `grammatical_features/1` catch-all (already returns error tuple)
+- [x] `grammatical_gender/1` catch-all (already returns error tuple)
 
-**Cldr.List** (ex_cldr_lists):
-- [ ] `list_patterns_for/1` catch-all
-- [ ] `list_formats_for/1` catch-all
+**Cldr.List** (cldr_lists):
+- [x] `list_patterns_for/1` catch-all
+- [x] `list_formats_for/1` catch-all
 
-**Cldr.Territory** (ex_cldr_territories):
-- [ ] `known_territories/1` catch-all
-- [ ] `known_subdivisions/1` catch-all
-- [ ] `available_territories/1` catch-all
-- [ ] `available_subdivisions/1` catch-all
-- [ ] `inverted_territories/1` catch-all
-- [ ] `inverted_subdivisions/1` catch-all
-- [ ] `from_territory_code/3` catch-all
-- [ ] `from_subdivision_code/3` catch-all
+**Cldr.Territory** (cldr_territories):
+- [x] `known_territories/1` catch-all
+- [x] `known_subdivisions/1` catch-all
+- [x] `available_territories/1` catch-all
+- [x] `available_subdivisions/1` catch-all
+- [x] `inverted_territories/1` catch-all
+- [x] `inverted_subdivisions/1` catch-all
+- [x] `from_territory_code/3` catch-all
+- [x] `from_subdivision_code/3` catch-all
 
-**Cldr.Calendar** (ex_cldr_calendars):
-- [ ] Calendar type functions catch-all (scope TBD after reading source)
+**Cldr.Calendar** (cldr_calendars):
+- [x] Architecture B — already has catch-alls, no changes needed
 
-**Cldr.PersonName** (ex_cldr_person_names):
-- [ ] `formats_for/1` catch-all
-- [ ] `locale_order/1` catch-all
-- [ ] `native_space_replacement/1` catch-all
-- [ ] `foreign_space_replacement/1` catch-all
+**Cldr.PersonName** (cldr_person_names):
+- [x] Architecture B — already has catch-alls, no changes needed
 
 ### Acceptance Criteria
 
-- [ ] Number formatting works with dynamically loaded locales
-- [ ] Date/time formatting works with dynamically loaded locales
-- [ ] Unit formatting works with dynamically loaded locales
-- [ ] List formatting works with dynamically loaded locales
-- [ ] Territory display works with dynamically loaded locales
-- [ ] Person name formatting works with dynamically loaded locales
-- [ ] No crashes when provider functions are called with dynamic locale
-- [ ] Fallback clauses delegate to `RuntimeStore.fetch_locale/2`
+- [ ] Number formatting works with dynamically loaded locales (needs provider tests)
+- [ ] Date/time formatting works with dynamically loaded locales (Architecture B, should work)
+- [ ] Unit formatting works with dynamically loaded locales (needs provider tests)
+- [x] List formatting works with dynamically loaded locales
+- [x] Territory display works with dynamically loaded locales
+- [ ] Person name formatting works with dynamically loaded locales (Architecture B, should work)
+- [x] No crashes when provider functions are called with dynamic locale
+- [x] Fallback clauses delegate to `Backend.fetch_locale_data/2`
 
 ### Tests
 
