@@ -63,4 +63,62 @@ defmodule Cldr.Locale.RuntimeStoreIntegrationTest do
       assert @dynamic_locale in names
     end
   end
+
+  describe "quote_marks_for with RuntimeStore" do
+    test "compiled locale quote still works (no regression)" do
+      result = @backend.quote("hello", locale: :en)
+      assert is_binary(result)
+      assert String.contains?(result, "hello")
+    end
+
+    test "dynamically loaded locale quote works" do
+      {:ok, _} = Cldr.Locale.RuntimeStore.load_locale(@backend, @dynamic_locale)
+
+      result = @backend.quote("hello", locale: @dynamic_locale)
+      assert is_binary(result)
+      assert String.contains?(result, "hello")
+    end
+  end
+
+  describe "ellipsis_chars_for with RuntimeStore" do
+    test "compiled locale ellipsis still works (no regression)" do
+      result = @backend.ellipsis("hello", locale: :en)
+      assert is_binary(result)
+      assert String.contains?(result, "…")
+    end
+
+    test "dynamically loaded locale ellipsis works" do
+      {:ok, _} = Cldr.Locale.RuntimeStore.load_locale(@backend, @dynamic_locale)
+
+      result = @backend.ellipsis("hello", locale: @dynamic_locale)
+      assert is_binary(result)
+      assert String.contains?(result, "…")
+    end
+  end
+
+  describe "script_direction_from_locale with RuntimeStore" do
+    test "compiled locale script direction still works (no regression)" do
+      assert @backend.Locale.script_direction_from_locale(:en) == :ltr
+    end
+
+    test "dynamically loaded locale returns correct script direction" do
+      {:ok, _} = Cldr.Locale.RuntimeStore.load_locale(@backend, @dynamic_locale)
+
+      assert @backend.Locale.script_direction_from_locale(@dynamic_locale) == :ltr
+    end
+  end
+
+  describe "lenient_parse_map with RuntimeStore" do
+    test "compiled locale normalize_lenient_parse still works (no regression)" do
+      result = @backend.normalize_lenient_parse("1,234", :number, :en)
+      assert is_binary(result)
+    end
+
+    test "dynamically loaded locale normalize_lenient_parse works" do
+      {:ok, _} = Cldr.Locale.RuntimeStore.load_locale(@backend, @dynamic_locale)
+
+      result = @backend.normalize_lenient_parse("1,234", :number, @dynamic_locale)
+      assert is_binary(result)
+    end
+  end
 end

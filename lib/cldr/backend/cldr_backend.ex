@@ -787,6 +787,47 @@ defmodule Cldr.Backend do
         end
       end
 
+      # RuntimeStore fallback for lenient_parse_map
+      @remove_compounds_runtime "{.*}"
+
+      def lenient_parse_map(scope, locale_name)
+          when is_atom(scope) and is_atom(locale_name) do
+        case Cldr.Locale.RuntimeStore.fetch_locale(unquote(backend), locale_name) do
+          {:ok, locale_data} ->
+            remove_compounds = Regex.compile!(@remove_compounds_runtime, [:ungreedy])
+
+            locale_data
+            |> Map.get(:lenient_parse)
+            |> case do
+              nil ->
+                raise ArgumentError,
+                      "No lenient parse data for locale #{inspect(locale_name)}"
+
+              lp ->
+                lp
+                |> Cldr.Map.deep_map(
+                  fn {k, v} ->
+                    regex =
+                      v
+                      |> String.replace("\x5c\x5c", "\x5c")
+                      |> String.replace(" ", "")
+                      |> String.replace(remove_compounds, "")
+
+                    {k, regex}
+                  end,
+                  level: 2
+                )
+                |> Cldr.Map.atomize_keys(level: 1)
+                |> Map.new()
+                |> Map.get(scope)
+            end
+
+          :error ->
+            raise ArgumentError,
+                  "No lenient parse data for locale #{inspect(locale_name)}"
+        end
+      end
+
       # When validating known locale names we memoize the
       # parsed language tag for performance reasons and only
       # add the gettext locale name (if there is one),
@@ -828,6 +869,30 @@ defmodule Cldr.Backend do
         @doc false
         def ellipsis_chars_for(unquote(locale_name)) do
           unquote(Macro.escape(ellipsis))
+        end
+      end
+
+      # RuntimeStore fallback for quote_marks_for
+      defp quote_marks_for(locale_name) when is_atom(locale_name) do
+        case Cldr.Locale.RuntimeStore.fetch_locale(unquote(backend), locale_name) do
+          {:ok, locale_data} ->
+            Map.get(locale_data, :delimiters)
+
+          :error ->
+            raise ArgumentError,
+                  "No delimiters found for locale #{inspect(locale_name)}"
+        end
+      end
+
+      # RuntimeStore fallback for ellipsis_chars_for
+      def ellipsis_chars_for(locale_name) when is_atom(locale_name) do
+        case Cldr.Locale.RuntimeStore.fetch_locale(unquote(backend), locale_name) do
+          {:ok, locale_data} ->
+            Map.get(locale_data, :ellipsis)
+
+          :error ->
+            raise ArgumentError,
+                  "No ellipsis found for locale #{inspect(locale_name)}"
         end
       end
 

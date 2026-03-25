@@ -49,5 +49,5 @@
 **Tests:** `mix test test/cldr/locale/runtime_store_integration_test.exs --trace` — 7/7 pass
 **Full suite:** `mix test --trace` — 13043/13043 pass, 0 failures
 
-**Commit:** [pending]
+**Commit:** c06b705c0
 **Next steps:** Phase 3 — Backend integration for locale data accessors (quote_marks_for, ellipsis_chars_for, lenient_parse_map, script_direction_from_locale)

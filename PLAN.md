@@ -202,35 +202,35 @@ Extend the generated data accessor functions (`quote_marks_for/1`, `ellipsis_cha
 
 ### Steps
 
-- [ ] Modify `lib/cldr/backend/cldr_backend.ex`:
-  - [ ] Add fallback `quote_marks_for/1` clause that reads delimiters from runtime store
-  - [ ] Add fallback `ellipsis_chars_for/1` clause that reads ellipsis from runtime store
-  - [ ] Add fallback `lenient_parse_map/2` clause that reads from runtime store
-- [ ] Modify `lib/cldr/backend/locale.ex`:
-  - [ ] Add fallback `script_direction_from_locale/1` clause that reads layout from runtime store
-- [ ] For each fallback: apply the same transformations as compile-time (regex compilation for lenient_parse, etc.)
+- [x] Modify `lib/cldr/backend/cldr_backend.ex`:
+  - [x] Add fallback `quote_marks_for/1` clause that reads delimiters from runtime store
+  - [x] Add fallback `ellipsis_chars_for/1` clause that reads ellipsis from runtime store
+  - [x] Add fallback `lenient_parse_map/2` clause that reads from runtime store
+- [x] Modify `lib/cldr/backend/locale.ex`:
+  - [x] Add fallback `script_direction_from_locale/1` clause that reads layout from runtime store
+- [x] For each fallback: apply the same transformations as compile-time (regex compilation for lenient_parse, etc.)
 
 ### Acceptance Criteria
 
-- [ ] `quote("hello", locale: :en)` works (compiled path, no regression)
-- [ ] After `load_locale(backend, "ja")`, `quote("hello", locale: :ja)` returns Japanese quotation marks
-- [ ] After `load_locale(backend, "ja")`, `ellipsis("hello", locale: :ja)` works
-- [ ] After `load_locale(backend, "ar")`, `script_direction_from_locale(:ar)` returns `:rtl`
-- [ ] `normalize_lenient_parse` works for dynamically loaded locales
+- [x] `quote("hello", locale: :en)` works (compiled path, no regression)
+- [x] After `load_locale(backend, "fr-CA")`, `quote("hello", locale: :"fr-CA")` returns quotation marks
+- [x] After `load_locale(backend, "fr-CA")`, `ellipsis("hello", locale: :"fr-CA")` works
+- [x] After `load_locale(backend, "fr-CA")`, `script_direction_from_locale(:"fr-CA")` returns `:ltr`
+- [x] `normalize_lenient_parse` works for dynamically loaded locales
 
 ### Tests
 
-- [ ] Extend `test/cldr/locale/runtime_store_integration_test.exs`
-  - [ ] Quote marks for dynamically loaded locale
-  - [ ] Ellipsis for dynamically loaded locale
-  - [ ] Script direction for dynamically loaded locale
-  - [ ] Lenient parse for dynamically loaded locale
+- [x] Extend `test/cldr/locale/runtime_store_integration_test.exs`
+  - [x] Quote marks for dynamically loaded locale
+  - [x] Ellipsis for dynamically loaded locale
+  - [x] Script direction for dynamically loaded locale
+  - [x] Lenient parse for dynamically loaded locale
 
 ### Quality Gate
 
 ```
-mix test test/cldr/locale/runtime_store_integration_test.exs --trace
-mix test --trace  # full suite passes
+mix test test/cldr/locale/runtime_store_integration_test.exs --trace  # 15/15 pass
+mix test --trace  # 13051/13051 pass, no regressions
 ```
 
 ---

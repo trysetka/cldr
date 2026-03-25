@@ -437,6 +437,16 @@ defmodule Cldr.Locale.Backend do
           script_direction_from_locale(cldr_locale_name)
         end
 
+        def script_direction_from_locale(locale_name) when is_atom(locale_name) do
+          case Cldr.Locale.RuntimeStore.fetch_locale(unquote(config.backend), locale_name) do
+            {:ok, %{layout: %{character_order: direction}}} ->
+              direction
+
+            _ ->
+              {:error, {Cldr.UnknownLocaleError, "No locale data for #{inspect(locale_name)}"}}
+          end
+        end
+
         def script_direction_from_locale(locale_name) do
           with {:ok, locale} <- unquote(config.backend).validate_locale(locale_name) do
             script_direction_from_locale(locale)
