@@ -5,6 +5,7 @@ defmodule Cldr.Backend do
     backend = config.backend
 
     quote location: :keep, bind_quoted: [config: Macro.escape(config), backend: backend] do
+      @cldr_config config
       @doc """
       Returns a list of the known locale names.
 
@@ -12,6 +13,9 @@ defmodule Cldr.Backend do
       are the subset of all CLDR locales that
       have been configured for use either
       in this module or in `Gettext`.
+
+      Also includes any locales dynamically loaded via
+      `Cldr.Locale.RuntimeStore.load_locale/2`.
 
       """
 
@@ -21,7 +25,8 @@ defmodule Cldr.Backend do
       @known_locale_names Locale.Loader.known_locale_names(config) -- @omit_locales
 
       def known_locale_names do
-        @known_locale_names
+        runtime_names = Cldr.Locale.RuntimeStore.known_loaded_locales(__MODULE__)
+        Enum.uniq(@known_locale_names ++ runtime_names)
       end
 
       @doc """
@@ -507,7 +512,6 @@ defmodule Cldr.Backend do
         Map.get(marks, preference) || Map.fetch!(marks, :default)
       end
 
-
       @doc """
       Add locale-specific ellipsis to a string.
 
@@ -827,14 +831,33 @@ defmodule Cldr.Backend do
         end
       end
 
-      # It's not a well known locale so we need to
-      # parse and validate
+      # Check runtime store before full parse
+      defp do_validate_locale(locale_name) when is_atom(locale_name) do
+        do_validate_locale_for_string(Atom.to_string(locale_name), locale_name)
+      end
 
-      defp do_validate_locale(locale_name) do
-        with {:ok, locale} <- Cldr.Locale.new(locale_name, unquote(backend)),
-             {:ok, locale} <- known_cldr_locale(locale, locale_name),
-             {:ok, locale} <- known_cldr_territory(locale) do
-          {:ok, locale}
+      defp do_validate_locale(locale_name) when is_binary(locale_name) do
+        locale_atom = String.to_atom(locale_name)
+        do_validate_locale_for_string(locale_name, locale_atom)
+      end
+
+      defp do_validate_locale_for_string(_locale_string, locale_atom) do
+        case Cldr.Locale.RuntimeStore.fetch_locale(unquote(backend), locale_atom) do
+          {:ok, _data} ->
+            language_tag =
+              locale_atom
+              |> Cldr.Config.language_tag()
+              |> Cldr.Locale.put_gettext_locale_name(@cldr_config)
+              |> Map.put(:backend, unquote(backend))
+
+            {:ok, language_tag}
+
+          :error ->
+            with {:ok, locale} <- Cldr.Locale.new(locale_atom, unquote(backend)),
+                 {:ok, locale} <- known_cldr_locale(locale, locale_atom),
+                 {:ok, locale} <- known_cldr_territory(locale) do
+              {:ok, locale}
+            end
         end
       end
 

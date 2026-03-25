@@ -21,4 +21,33 @@
 **Tests:** `mix test test/cldr/locale/runtime_store_test.exs --trace` — 15/15 pass
 **Full suite:** `mix test --trace` — 13036/13036 pass, 0 failures
 
+**Commit:** 1a349639c
 **Next steps:** Phase 2 — Backend integration for locale validation. Add `do_validate_locale/1` fallback in `lib/cldr/backend/cldr_backend.ex` that checks RuntimeStore before full parsing.
+
+---
+
+### 2026-03-25 — Phase 2 Complete
+
+**Beads task:** cldr-z1l: Phase 2: Backend — Locale Validation
+**Completed:** RuntimeStore fallback for locale validation, known_locale_names, known_locale_name?
+**Phase reference:** PLAN.md §Phase 2
+
+**Key decisions:**
+- Added `do_validate_locale/1` fallback that checks RuntimeStore before `Cldr.Locale.new/2` full parse path
+- The fallback handles both string and atom inputs via separate guard clauses (`is_atom`/`is_binary`), delegates to shared `do_validate_locale_for_string/2` helper
+- String locale names are converted to atoms for RuntimeStore lookup (`String.to_atom/1`) — safe because loaded locale atoms already exist
+- LanguageTag is constructed via `Cldr.Config.language_tag/1` + `Cldr.Locale.put_gettext_locale_name/2` + `Map.put(:backend, ...)` — mirrors compiled path
+- `@cldr_config` module attribute stores the compile-time config struct for use in `defp` (bind_quoted `config` variable has context issues in function defs)
+- `known_locale_names/0` extended to merge `@known_locale_names` with `RuntimeStore.known_loaded_locales(__MODULE__)`
+- `known_locale_name?/1` automatically works via its delegation to the extended `known_locale_names/0`
+- Used `NoFallback.Cldr` (locales: ["en", "es-US"]) for integration tests to exercise the fallback path
+
+**Files changed:**
+- `lib/cldr/backend/cldr_backend.ex` — modified: added `@cldr_config` attribute, `do_validate_locale/1` RuntimeStore fallback, extended `known_locale_names/0`
+- `test/cldr/locale/runtime_store_integration_test.exs` — new test file (7 tests)
+
+**Tests:** `mix test test/cldr/locale/runtime_store_integration_test.exs --trace` — 7/7 pass
+**Full suite:** `mix test --trace` — 13043/13043 pass, 0 failures
+
+**Commit:** [pending]
+**Next steps:** Phase 3 — Backend integration for locale data accessors (quote_marks_for, ellipsis_chars_for, lenient_parse_map, script_direction_from_locale)

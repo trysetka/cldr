@@ -158,38 +158,38 @@ Extend `Cldr.Backend` generated code so that `validate_locale/1` works for dynam
 
 ### Steps
 
-- [ ] Modify `lib/cldr/backend/cldr_backend.ex`:
-  - [ ] Add a `do_validate_locale/1` fallback that checks runtime store before full parsing
-  - [ ] Insert check before the existing fallback at line 833
-  - [ ] Logic: if locale is in `:persistent_term` or ETS, construct `LanguageTag` from stored data and return `{:ok, tag}`
-  - [ ] If not in runtime store, fall through to existing `Cldr.Locale.new/2` path
-- [ ] Add `known_locale_name?/1` extension:
-  - [ ] Check compiled names first (existing)
-  - [ ] Fall back to `RuntimeStore.loaded?/2`
-- [ ] Add `known_locale_names/0` extension:
-  - [ ] Merge compiled names with runtime-loaded names
+- [x] Modify `lib/cldr/backend/cldr_backend.ex`:
+  - [x] Add a `do_validate_locale/1` fallback that checks runtime store before full parsing
+  - [x] Insert check before the existing fallback at line 833
+  - [x] Logic: if locale is in `:persistent_term` or ETS, construct `LanguageTag` from stored data and return `{:ok, tag}`
+  - [x] If not in runtime store, fall through to existing `Cldr.Locale.new/2` path
+- [x] Add `known_locale_name?/1` extension:
+  - [x] Check compiled names first (existing)
+  - [x] Fall back to `RuntimeStore.loaded?/2` (via extended `known_locale_names/0`)
+- [x] Add `known_locale_names/0` extension:
+  - [x] Merge compiled names with runtime-loaded names
 
 ### Acceptance Criteria
 
-- [ ] `validate_locale(:en)` still returns instantly (compiled path, no regression)
-- [ ] `load_locale(backend, "fr-CA")` then `validate_locale(:"fr-CA")` returns `{:ok, tag}`
-- [ ] `known_locale_name?(:"fr-CA")` returns `true` after loading
-- [ ] `known_locale_names()` includes dynamically loaded locales
-- [ ] Unloaded dynamic locale falls through to existing `Cldr.Locale.new/2` behavior (no crash)
+- [x] `validate_locale(:en)` still returns instantly (compiled path, no regression)
+- [x] `load_locale(backend, "fr-CA")` then `validate_locale(:"fr-CA")` returns `{:ok, tag}`
+- [x] `known_locale_name?(:"fr-CA")` returns `true` after loading
+- [x] `known_locale_names()` includes dynamically loaded locales
+- [x] Unloaded dynamic locale falls through to existing `Cldr.Locale.new/2` behavior (no crash)
 
 ### Tests
 
-- [ ] Add integration tests in `test/cldr/locale/runtime_store_integration_test.exs`
-  - [ ] Load locale, validate it, check LanguageTag fields
-  - [ ] Validate compiled locale — no regression
-  - [ ] Validate unknown/unloaded locale — existing behavior preserved
-  - [ ] `known_locale_names/0` includes dynamic locales
+- [x] Add integration tests in `test/cldr/locale/runtime_store_integration_test.exs`
+  - [x] Load locale, validate it, check LanguageTag fields
+  - [x] Validate compiled locale — no regression
+  - [x] Validate unknown/unloaded locale — existing behavior preserved
+  - [x] `known_locale_names/0` includes dynamic locales
 
 ### Quality Gate
 
 ```
-mix test test/cldr/locale/runtime_store_integration_test.exs --trace
-mix test --trace  # full suite passes, no regressions
+mix test test/cldr/locale/runtime_store_integration_test.exs --trace  # 7/7 pass
+mix test --trace  # 13043/13043 pass, no regressions
 ```
 
 ---
