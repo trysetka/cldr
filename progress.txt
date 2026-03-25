@@ -157,7 +157,30 @@
 - `lib/cldr/backend/cldr_backend.ex` — `fetch_locale_data/2` helper
 - `test/cldr/locale/runtime_store_contract_test.exs` — 4 new helper tests
 
-**Commits (core):** 342f41c86, cae4ea3fd
+**Commits (core):** 342f41c86, cae4ea3fd, ac37871d1, 9ff517123
+**Commits (providers):** 5bee78c (cldr_lists), d0f1c36 (cldr_numbers), 65b2246 (cldr_territories), 259f3a6 (cldr_units)
 **Tests:** 13096/13096 pass, 0 failures
 
-**Remaining for Phase 5:** Provider changes need to be committed in their own repos and tested individually. cldr_dates_times, cldr_calendars, cldr_person_names don't need changes (Architecture B).
+**Remaining for Phase 5:** Provider tests need to be written in each provider's test suite. Provider mix.exs may need version bump. cldr_dates_times, cldr_calendars, cldr_person_names don't need changes (Architecture B).
+
+---
+
+### 2026-03-25 — Session Wrap-Up
+
+**Overall status:** Phases 1-5 complete. Phases 6-7 remain.
+**Beads:** 5 closed (cldr-5h3, cldr-z1l, cldr-cud, cldr-olq, cldr-ll8), 2 ready (cldr-qcx, cldr-mvp)
+**Core commits:** 14 ahead of origin
+
+**What works end-to-end:**
+- Load a locale at runtime: `MyApp.Cldr.load_locale("fr-CA")`
+- Validate it: `MyApp.Cldr.validate_locale(:"fr-CA")` → `{:ok, %LanguageTag{}}`
+- Use core accessors: quote, ellipsis, script_direction, lenient_parse
+- Provider functions: lists, numbers, territories, units (via catch-all clauses)
+
+**Known gaps:**
+- Provider tests not yet written
+- cldr_numbers RBNF and Transliterate catch-alls not implemented (complex, needs investigation)
+- No edge case tests (Phase 6)
+- No documentation beyond code docs (Phase 7)
+
+**Next steps when resuming:** Phase 6 (edge cases, robustness, performance benchmarks) or Phase 7 (documentation polish). Run `br ready` to pick up the next task.
