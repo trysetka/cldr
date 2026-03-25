@@ -247,4 +247,32 @@ defmodule Cldr.Locale.RuntimeStoreContractTest do
       end
     end
   end
+
+  describe "fetch_locale_data/2 helper" do
+    test "returns {:ok, value} for loaded locale and valid key" do
+      {:ok, _} = Cldr.Locale.RuntimeStore.load_locale(@backend, :en)
+
+      assert {:ok, list_formats} = @backend.fetch_locale_data(:list_formats, :en)
+      assert is_map(list_formats)
+    end
+
+    test "returns {:error, :not_loaded} for unloaded locale" do
+      assert {:error, :not_loaded} = @backend.fetch_locale_data(:list_formats, :never_loaded)
+    end
+
+    test "returns {:error, :key_not_found} for valid locale but missing key" do
+      {:ok, _} = Cldr.Locale.RuntimeStore.load_locale(@backend, :en)
+
+      assert {:error, :key_not_found} = @backend.fetch_locale_data(:nonexistent_key, :en)
+    end
+
+    test "works for all provider data keys" do
+      {:ok, _} = Cldr.Locale.RuntimeStore.load_locale(@backend, :en)
+
+      for key <- @provider_keys do
+        assert {:ok, _value} = @backend.fetch_locale_data(key, :en),
+               "fetch_locale_data failed for key #{inspect(key)}"
+      end
+    end
+  end
 end

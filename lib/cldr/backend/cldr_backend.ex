@@ -1081,6 +1081,41 @@ defmodule Cldr.Backend do
         Cldr.locale_loaded?(__MODULE__, locale_name)
       end
 
+      @doc """
+      Fetches a specific data key from the RuntimeStore for a dynamically loaded locale.
+
+      This is the recommended entry point for provider modules that need
+      to add RuntimeStore fallback clauses. Returns `{:ok, value}` if the
+      locale is loaded and the key exists, or `{:error, reason}` otherwise.
+
+      ## Arguments
+
+      * `key` is an atom identifying the locale data key
+        (e.g. `:list_formats`, `:number_symbols`, `:territories`)
+      * `locale_name` is the locale atom (e.g. `:fr`, `:"fr-CA"`)
+
+      ## Examples
+
+          iex> #{inspect(__MODULE__)}.fetch_locale_data(:delimiters, :en)
+          {:error, :not_loaded}
+
+      """
+      @spec fetch_locale_data(atom(), atom()) ::
+              {:ok, term()} | {:error, :not_loaded | :key_not_found}
+      def fetch_locale_data(key, locale_name)
+          when is_atom(key) and is_atom(locale_name) do
+        case Cldr.Locale.RuntimeStore.fetch_locale(__MODULE__, locale_name) do
+          {:ok, locale_data} ->
+            case Map.fetch(locale_data, key) do
+              {:ok, _value} = ok -> ok
+              :error -> {:error, :key_not_found}
+            end
+
+          :error ->
+            {:error, :not_loaded}
+        end
+      end
+
       defdelegate available_locale_name?(locale_name), to: Cldr
 
       defdelegate known_calendars(), to: Cldr
