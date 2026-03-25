@@ -39,6 +39,13 @@ Execution rules for the active task
 - Preserve the compiled function clause fast path for pre-configured locales; zero regression on existing behavior.
 - All error paths return tagged tuples `{:error, reason}`, never raise.
 
+Commit rules (mandatory — hard stop, never skip)
+- You MUST commit before closing a beads task or starting a new phase. This is a gate, not a suggestion.
+- After tests pass and plan checkboxes are updated: stage all changed files (`git add`), write a concise commit message, and commit.
+- Every commit message must reference the phase (e.g. "Phase 1: ...", "Phase 2: ...").
+- Do NOT touch any code for the next phase until the current phase's commit is created.
+- Verify with `git status` that the working tree is clean before proceeding.
+
 Verification rules
 - Run the tests required by the active phase/sub-plan.
 - Run `mix test --trace` after completing each phase to catch regressions.
