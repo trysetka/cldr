@@ -262,6 +262,10 @@ defmodule Cldr.Locale.RuntimeStore do
 
   defp transform_locale_data(content, locale_name) do
     content
+    |> Cldr.Map.integerize_keys(filter: "list_formats")
+    |> Cldr.Map.integerize_keys(filter: "number_formats")
+    |> Cldr.Map.integerize_keys(filter: "date_fields")
+    |> Cldr.Map.atomize_values(filter: "number_systems")
     |> Cldr.Map.atomize_keys(
       filter: "locale_display_names",
       skip: ["language", "language_variants"]
@@ -286,10 +290,6 @@ defmodule Cldr.Locale.RuntimeStore do
     |> Cldr.Map.atomize_values(filter: :layout)
     |> Cldr.Map.atomize_values(only: :usage)
     |> structure_date_formats()
-    |> Cldr.Map.integerize_keys(filter: "list_formats")
-    |> Cldr.Map.integerize_keys(filter: "number_formats")
-    |> Cldr.Map.integerize_keys(filter: "date_fields")
-    |> Cldr.Map.atomize_values(filter: "number_systems")
     |> Cldr.Map.atomize_keys(level: 1..1)
     |> parse_version()
     |> Map.put(:name, locale_name)

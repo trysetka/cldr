@@ -355,6 +355,8 @@ ex_cldr (core)
 
 ### Steps
 
+- [x] Data contract verification: write tests proving RuntimeStore returns Loader-identical data
+- [x] Fix transformation pipeline ordering bug (integerize_keys must run before atomize_keys(level: 1..1))
 - [ ] For each provider, identify every compiled function that takes a locale atom as its first argument
 - [ ] Add a catch-all clause to each that calls `Cldr.Locale.RuntimeStore.fetch_locale(backend, locale_name)`
 - [ ] Apply the same data transformation that the compile-time path uses
@@ -415,13 +417,18 @@ ex_cldr (core)
 
 ### Tests
 
+- [x] Data contract tests in `test/cldr/locale/runtime_store_contract_test.exs` (27 tests)
 - [ ] Provider-specific integration tests in each provider's test suite
 - [ ] Each test: load locale → call provider function → assert correct output
 
 ### Quality Gate
 
 ```
-# In each provider repo:
+# In-repo (done):
+mix test test/cldr/locale/runtime_store_contract_test.exs --trace  # 27/27 pass
+mix test --trace  # 13092/13092 pass, 0 failures
+
+# In each provider repo (pending):
 mix test --trace
 ```
 
