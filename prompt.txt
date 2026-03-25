@@ -46,6 +46,12 @@ Commit rules (mandatory — hard stop, never skip)
 - Do NOT touch any code for the next phase until the current phase's commit is created.
 - Verify with `git status` that the working tree is clean before proceeding.
 
+Hard stop rule (mandatory — one task at a time)
+- After completing ONE beads task (tests pass, plan updated, committed), you MUST stop. Do not pick up the next task.
+- Report what was done, the commit SHA, and the next step. Then wait for the next invocation.
+- Do not chain tasks. Do not start the next phase, read ahead, or create follow-up tasks in the same session unless explicitly asked.
+- This applies to sub-tasks within a phase too: if you split a phase into sub-tasks, stop after each one.
+
 Verification rules
 - Run the tests required by the active phase/sub-plan.
 - Run `mix test --trace` after completing each phase to catch regressions.
