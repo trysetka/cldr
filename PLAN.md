@@ -243,41 +243,41 @@ Add clean public API functions to `Cldr` and backend modules.
 
 ### Steps
 
-- [ ] Add to `lib/cldr.ex`:
-  - [ ] `Cldr.load_locale(backend, locale_name)` — delegates to `RuntimeStore.load_locale/2`
-  - [ ] `Cldr.unload_locale(backend, locale_name)` — delegates to `RuntimeStore.unload_locale/2`
-  - [ ] `Cldr.loaded_locale_names(backend)` — delegates to `RuntimeStore.known_loaded_locales/1`
-  - [ ] `Cldr.locale_loaded?(backend, locale_name)` — delegates to `RuntimeStore.loaded?/2`
-- [ ] Add to generated backend module (via `lib/cldr/backend/cldr_backend.ex`):
-  - [ ] `Backend.load_locale(locale_name)` — shorthand
-  - [ ] `Backend.unload_locale(locale_name)` — shorthand
-  - [ ] `Backend.loaded_locale_names()` — shorthand
-  - [ ] `Backend.locale_loaded?(locale_name)` — shorthand
-- [ ] Add typespecs and `@doc` for all public functions
+- [x] Add to `lib/cldr.ex`:
+  - [x] `Cldr.load_locale(backend, locale_name)` — delegates to `RuntimeStore.load_locale/2`
+  - [x] `Cldr.unload_locale(backend, locale_name)` — delegates to `RuntimeStore.unload_locale/2`
+  - [x] `Cldr.loaded_locale_names(backend)` — delegates to `RuntimeStore.known_loaded_locales/1`
+  - [x] `Cldr.locale_loaded?(backend, locale_name)` — delegates to `RuntimeStore.loaded?/2`
+- [x] Add to generated backend module (via `lib/cldr/backend/cldr_backend.ex`):
+  - [x] `Backend.load_locale(locale_name)` — shorthand
+  - [x] `Backend.unload_locale(locale_name)` — shorthand
+  - [x] `Backend.loaded_locale_names()` — shorthand
+  - [x] `Backend.locale_loaded?(locale_name)` — shorthand
+- [x] Add typespecs and `@doc` for all public functions
 - [ ] Document in `@moduledoc` section of `Cldr`
 
 ### Acceptance Criteria
 
-- [ ] `MyApp.Cldr.load_locale("fr-CA")` returns `:ok`
-- [ ] `MyApp.Cldr.locale_loaded?(:"fr-CA")` returns `true`
-- [ ] `MyApp.Cldr.loaded_locale_names()` includes `:"fr-CA"`
-- [ ] `MyApp.Cldr.unload_locale(:"fr-CA")` returns `:ok`
-- [ ] `MyApp.Cldr.locale_loaded?(:"fr-CA")` returns `false` after unload
-- [ ] All functions have typespecs
-- [ ] All functions have `@doc` with examples
+- [x] `MyApp.Cldr.load_locale("fr-CA")` returns `:ok`
+- [x] `MyApp.Cldr.locale_loaded?(:"fr-CA")` returns `true`
+- [x] `MyApp.Cldr.loaded_locale_names()` includes `:"fr-CA"`
+- [x] `MyApp.Cldr.unload_locale(:"fr-CA")` returns `:ok`
+- [x] `MyApp.Cldr.locale_loaded?(:"fr-CA")` returns `false` after unload
+- [x] All functions have typespecs
+- [x] All functions have `@doc` with examples
 
 ### Tests
 
-- [ ] Add tests in `test/cldr/locale/runtime_store_api_test.exs`
-  - [ ] Happy path for all 4 API functions
-  - [ ] Error cases (invalid locale, already loaded, not loaded)
-  - [ ] Idempotent load/unload
+- [x] Add tests in `test/cldr/locale/runtime_store_api_test.exs`
+  - [x] Happy path for all 4 API functions
+  - [x] Error cases (invalid locale, already loaded, not loaded)
+  - [x] Idempotent load/unload
 
 ### Quality Gate
 
 ```
-mix test test/cldr/locale/runtime_store_api_test.exs --trace
-mix test --trace
+mix test test/cldr/locale/runtime_store_api_test.exs --trace  # 14/14 pass
+mix test --trace  # 13065/13065 pass, 0 failures
 ```
 
 ---

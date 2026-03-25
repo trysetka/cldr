@@ -1097,6 +1097,129 @@ defmodule Cldr do
   end
 
   @doc """
+  Loads a locale at runtime by reading the locale JSON file,
+  decoding it, and caching it in the RuntimeStore.
+
+  The locale will be available for all provider functions
+  (number formatting, date formatting, etc.) after loading.
+
+  ## Arguments
+
+  * `backend` is any module that includes `use Cldr` and therefore
+    is a `Cldr` backend module.
+
+  * `locale_name` is an atom or string identifying the locale
+    (e.g. `:"fr-CA"` or `"fr-CA"`).
+
+  ## Returns
+
+  * `:ok` on success
+
+  * `{:error, reason}` on failure (e.g. locale not found)
+
+  ## Examples
+
+      iex> Cldr.load_locale(NoFallback.Cldr, :"fr-CA")
+      iex> Cldr.unload_locale(NoFallback.Cldr, :"fr-CA")
+      :ok
+
+      iex> Cldr.load_locale(NoFallback.Cldr, :"zz-ZZ")
+      {:error, :not_found}
+
+  """
+  @spec load_locale(backend(), atom() | String.t()) :: :ok | {:error, term()}
+  def load_locale(backend, locale_name) when is_atom(backend) do
+    locale_atom = if is_binary(locale_name), do: String.to_atom(locale_name), else: locale_name
+
+    case Cldr.Locale.RuntimeStore.load_locale(backend, locale_atom) do
+      {:ok, _data} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @doc """
+  Unloads a previously runtime-loaded locale, removing it from
+  both `:persistent_term` and ETS.
+
+  ## Arguments
+
+  * `backend` is any module that includes `use Cldr` and therefore
+    is a `Cldr` backend module.
+
+  * `locale_name` is an atom identifying the locale (e.g. `:"fr-CA"`).
+
+  ## Returns
+
+  * `:ok` on success
+
+  * `{:error, :not_found}` if the locale was not loaded
+
+  ## Examples
+
+      iex> Cldr.load_locale(NoFallback.Cldr, :"fr-CA")
+      iex> Cldr.unload_locale(NoFallback.Cldr, :"fr-CA")
+      :ok
+
+      iex> Cldr.unload_locale(NoFallback.Cldr, :"xx-XX")
+      {:error, :not_found}
+
+  """
+  @spec unload_locale(backend(), atom()) :: :ok | {:error, :not_found}
+  def unload_locale(backend, locale_name) when is_atom(backend) and is_atom(locale_name) do
+    Cldr.Locale.RuntimeStore.unload_locale(backend, locale_name)
+  end
+
+  @doc """
+  Returns a list of locale atoms that have been loaded at runtime
+  for the given backend.
+
+  ## Arguments
+
+  * `backend` is any module that includes `use Cldr` and therefore
+    is a `Cldr` backend module.
+
+  ## Returns
+
+  * A list of locale name atoms
+
+  ## Examples
+
+      iex> Cldr.loaded_locale_names(DefaultBackend.Cldr)
+      []
+
+  """
+  @spec loaded_locale_names(backend()) :: [atom()]
+  def loaded_locale_names(backend) when is_atom(backend) do
+    Cldr.Locale.RuntimeStore.known_loaded_locales(backend)
+  end
+
+  @doc """
+  Returns a boolean indicating whether the given locale has been
+  loaded at runtime for the given backend.
+
+  ## Arguments
+
+  * `backend` is any module that includes `use Cldr` and therefore
+    is a `Cldr` backend module.
+
+  * `locale_name` is an atom identifying the locale (e.g. `:"fr-CA"`).
+
+  ## Returns
+
+  * `true` if the locale is loaded, `false` otherwise
+
+  ## Examples
+
+      iex> Cldr.locale_loaded?(DefaultBackend.Cldr, :"fr-CA")
+      false
+
+  """
+  @spec locale_loaded?(backend(), atom()) :: boolean()
+  def locale_loaded?(backend, locale_name) when is_atom(backend) and is_atom(locale_name) do
+    Cldr.Locale.RuntimeStore.loaded?(backend, locale_name)
+  end
+
+  @doc """
   Returns a boolean indicating if the specified locale
   name is configured and available in Cldr and supports
   rules based number formats (RBNF).

@@ -1015,6 +1015,72 @@ defmodule Cldr.Backend do
           {:error, Cldr.unknown_number_system_type_error(to_string(number_system_type))}
       end
 
+      @doc """
+      Loads a locale at runtime for this backend.
+
+      See `Cldr.load_locale/2` for details.
+
+      ## Examples
+
+          iex> #{inspect(__MODULE__)}.load_locale(:"fr-CA")
+          iex> #{inspect(__MODULE__)}.unload_locale(:"fr-CA")
+          :ok
+
+      """
+      @spec load_locale(atom() | String.t()) :: :ok | {:error, term()}
+      def load_locale(locale_name) do
+        Cldr.load_locale(__MODULE__, locale_name)
+      end
+
+      @doc """
+      Unloads a previously runtime-loaded locale for this backend.
+
+      See `Cldr.unload_locale/2` for details.
+
+      ## Examples
+
+          iex> #{inspect(__MODULE__)}.load_locale(:"fr-CA")
+          iex> #{inspect(__MODULE__)}.unload_locale(:"fr-CA")
+          :ok
+
+      """
+      @spec unload_locale(atom()) :: :ok | {:error, :not_found}
+      def unload_locale(locale_name) do
+        Cldr.unload_locale(__MODULE__, locale_name)
+      end
+
+      @doc """
+      Returns a list of locale atoms loaded at runtime for this backend.
+
+      See `Cldr.loaded_locale_names/1` for details.
+
+      ## Examples
+
+          iex> #{inspect(__MODULE__)}.loaded_locale_names()
+          []
+
+      """
+      @spec loaded_locale_names() :: [atom()]
+      def loaded_locale_names do
+        Cldr.loaded_locale_names(__MODULE__)
+      end
+
+      @doc """
+      Returns true if the given locale has been loaded at runtime for this backend.
+
+      See `Cldr.locale_loaded?/2` for details.
+
+      ## Examples
+
+          iex> #{inspect(__MODULE__)}.locale_loaded?(:"fr-CA")
+          false
+
+      """
+      @spec locale_loaded?(atom()) :: boolean()
+      def locale_loaded?(locale_name) do
+        Cldr.locale_loaded?(__MODULE__, locale_name)
+      end
+
       defdelegate available_locale_name?(locale_name), to: Cldr
 
       defdelegate known_calendars(), to: Cldr

@@ -51,3 +51,59 @@
 
 **Commit:** c06b705c0
 **Next steps:** Phase 3 — Backend integration for locale data accessors (quote_marks_for, ellipsis_chars_for, lenient_parse_map, script_direction_from_locale)
+
+---
+
+### 2026-03-25 — Phase 3 Complete
+
+**Beads task:** cldr-cud: Phase 3: Backend — Locale Data Accessors
+**Completed:** RuntimeStore fallbacks for all locale data accessor functions
+**Phase reference:** PLAN.md §Phase 3
+
+**Key decisions:**
+- Added `quote_marks_for/1` fallback that reads `:delimiters` from RuntimeStore data
+- Added `ellipsis_chars_for/1` fallback that reads `:ellipsis` from RuntimeStore data
+- Added `lenient_parse_map/2` fallback that applies same regex transformation as compile-time (remove compounds, escape fixes, atomize keys)
+- Added `script_direction_from_locale/1` fallback in locale.ex that reads `:layout.character_order` — this also fixes a pre-existing infinite recursion bug where the catch-all would loop through validate_locale → LanguageTag → catch-all
+- All fallbacks use `RuntimeStore.fetch_locale/2` as the single data source
+- Pre-configured locales retain 0ns compiled function clause fast path (zero regression)
+
+**Files changed:**
+- `lib/cldr/backend/cldr_backend.ex` — added 3 fallback clauses (quote_marks_for, ellipsis_chars_for, lenient_parse_map)
+- `lib/cldr/backend/locale.ex` — added script_direction_from_locale fallback before existing catch-all
+- `test/cldr/locale/runtime_store_integration_test.exs` — extended with 8 new tests (15 total)
+- `PLAN.md` — updated Phase 3 checkboxes and quality gate
+
+**Tests:** `mix test test/cldr/locale/runtime_store_integration_test.exs --trace` — 15/15 pass
+**Full suite:** `mix test --trace` — 13051/13051 pass, 0 failures
+
+**Commit:** 4727d6275
+**Next steps:** Phase 4 — Public API (Cldr.load_locale, Cldr.unload_locale, Cldr.loaded_locale_names, Cldr.locale_loaded? + backend shorthands)
+
+---
+
+### 2026-03-25 — Phase 4 Complete
+
+**Beads task:** cldr-olq: Phase 4: Public API
+**Completed:** Clean public API for runtime locale loading on Cldr and backend modules
+**Phase reference:** PLAN.md §Phase 4
+
+**Key decisions:**
+- `Cldr.load_locale/2` delegates to `RuntimeStore.load_locale/2`, converts `{:ok, data}` → `:ok` for clean API
+- `Cldr.unload_locale/2`, `Cldr.loaded_locale_names/1`, `Cldr.locale_loaded?/2` pass through directly to RuntimeStore
+- Backend shorthand functions (`Backend.load_locale/1`, etc.) delegate to `Cldr.*` with `__MODULE__` as backend
+- `load_locale/2` accepts both atom and string locale names (converts string to atom)
+- All functions have `@spec`, `@doc` with examples in iex format
+- Doctests use load-then-unload patterns to avoid state leakage between async doctests
+
+**Files changed:**
+- `lib/cldr.ex` — added 4 public API functions (~120 lines including docs)
+- `lib/cldr/backend/cldr_backend.ex` — added 4 backend shorthand functions with docs
+- `test/cldr/locale/runtime_store_api_test.exs` — new test file (14 tests)
+- `PLAN.md` — updated Phase 4 checkboxes and quality gate
+
+**Tests:** `mix test test/cldr/locale/runtime_store_api_test.exs --trace` — 14/14 pass
+**Full suite:** `mix test --trace` — 13065/13065 pass, 0 failures
+
+**Commit:** (pending)
+**Next steps:** Phase 5 — Provider Integration (add catch-all fallback clauses in external provider packages)
