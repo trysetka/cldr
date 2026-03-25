@@ -107,3 +107,57 @@
 
 **Commit:** 59fa4b589
 **Next steps:** Phase 5 — Provider Integration (add catch-all fallback clauses in external provider packages)
+
+---
+
+### 2026-03-25 — Phase 5 (in-repo work) Complete
+
+**Beads task:** cldr-ll8: Phase 5: Provider Integration
+**Completed:** Data contract verification tests + critical transform pipeline bug fix
+**Phase reference:** PLAN.md §Phase 5
+
+**Key decisions:**
+- Provider packages are external — cannot modify in this repo. In-repo work focused on verifying the data contract.
+- **Critical bug found and fixed:** `transform_locale_data/2` had wrong operation order — `atomize_keys(level: 1..1)` ran BEFORE `integerize_keys`, causing string keys like `"2"` to become atoms (`:"2"`) instead of remaining as strings for `integerize_keys` to convert to integers (`2`). Reordered to match `Loader.do_get_locale/3` exactly.
+- Added 27 data contract tests proving RuntimeStore returns Loader-identical data for all provider keys (number_formats, list_formats, dates, territories, units, person_names, etc.)
+- Verified provider fallback pattern: `fetch_locale/2` returns `{:ok, data}` with correct keys for each provider's extraction pattern
+
+**Files changed:**
+- `lib/cldr/locale/runtime_store.ex` — reordered `transform_locale_data/2` pipeline
+- `test/cldr/locale/runtime_store_contract_test.exs` — new test file (27 tests)
+- `PLAN.md` — updated Phase 5 steps, tests, quality gate
+
+**Tests:** `mix test test/cldr/locale/ --trace` — 71/71 pass
+**Full suite:** `mix test --trace` — 13092/13092 pass, 0 failures
+
+**Commit:** cae4ea3fd
+**Next steps:** Phase 5 provider PRs (external packages). Each provider needs catch-all clauses delegating to `RuntimeStore.fetch_locale/2`. Remaining Phase 5 steps: per-provider fallback clauses in ex_cldr_numbers, ex_cldr_dates_times, ex_cldr_units, ex_cldr_lists, ex_cldr_territories, ex_cldr_calendars, ex_cldr_person_names.
+
+---
+
+### 2026-03-25 — Phase 5 Provider Catch-Alls Implemented
+
+**Completed:** Provider catch-all clauses for 4 providers + shared helper
+**Phase reference:** PLAN.md §Phase 5
+
+**Key decisions:**
+- Added `Backend.fetch_locale_data(key, locale_name)` helper in core — providers use this instead of calling RuntimeStore directly
+- All provider catch-all clauses use `when is_atom(locale_name)` guard to match BEFORE the existing `validate_locale` → re-dispatch fallback (which infinite-loops for dynamic locales)
+- Architecture B providers (cldr_dates_times, cldr_calendars, cldr_person_names) already have catch-alls — no changes needed
+- Provider repos cloned as subdirectories (own .git) — changes committed there separately
+
+**Provider changes:**
+- cldr_lists: `list_patterns_for/1`, `list_formats_for/1` — fetch `:list_formats`, struct-transform
+- cldr_numbers/symbol: `number_symbols_for/1` — fetch `:number_symbols`, struct-transform
+- cldr_numbers/format: `all_formats_for/1`, `minimum_grouping_digits_for/1`, `default_grouping_for/1`
+- cldr_territories: 6 one-arity + 2 three-arity catch-alls — fetch `:territories`/`:subdivisions`
+- cldr_units: `units_for/2` — fetch `:units`, style-filtered transform
+
+**Files changed (core):**
+- `lib/cldr/backend/cldr_backend.ex` — `fetch_locale_data/2` helper
+- `test/cldr/locale/runtime_store_contract_test.exs` — 4 new helper tests
+
+**Commits (core):** 342f41c86, cae4ea3fd
+**Tests:** 13096/13096 pass, 0 failures
+
+**Remaining for Phase 5:** Provider changes need to be committed in their own repos and tested individually. cldr_dates_times, cldr_calendars, cldr_person_names don't need changes (Architecture B).
