@@ -1,0 +1,24 @@
+## Progress Log — Dynamic Runtime Locale Loading
+
+### 2026-03-25 — Phase 1 Complete
+
+**Beads task:** cldr-5h3: Phase 1: Cldr.Locale.RuntimeStore Core
+**Completed:** RuntimeStore module with ETS + persistent_term tiered cache
+**Phase reference:** PLAN.md §Phase 1
+
+**Key decisions:**
+- Used `Loader.read_locale_file!/1` + manual transform (not `Loader.do_get_locale/3`) to avoid compile-time cache interference
+- Added separate `@index_table_name :cldr_runtime_locale_index` to track loaded locales regardless of migration state — fixes `known_loaded_locales/1` after migration
+- `:ets.insert_new/2` serves as the mutex — winner loads, losers poll with 10ms intervals
+- Migration is batched through GenServer with `Process.send_after/3` (0ms delay)
+- Persistent_term key: `{Cldr.Locale.RuntimeStore, backend, locale_name}`
+- All error paths return tagged tuples `{:error, reason}`
+
+**Files changed:**
+- `lib/cldr/locale/runtime_store.ex` — new module (396 lines)
+- `test/cldr/locale/runtime_store_test.exs` — new test file (15 tests)
+
+**Tests:** `mix test test/cldr/locale/runtime_store_test.exs --trace` — 15/15 pass
+**Full suite:** `mix test --trace` — 13036/13036 pass, 0 failures
+
+**Next steps:** Phase 2 — Backend integration for locale validation. Add `do_validate_locale/1` fallback in `lib/cldr/backend/cldr_backend.ex` that checks RuntimeStore before full parsing.

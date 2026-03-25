@@ -91,54 +91,54 @@ Build the tiered cache module in isolation with no integration into the backend.
 
 ### Steps
 
-- [ ] Create `lib/cldr/locale/runtime_store.ex` with module skeleton
-- [ ] Implement ETS table lifecycle:
-  - [ ] `init/1` — create named ETS table (`:set`, `:public`, `read_concurrency: true`)
-  - [ ] Table name: `:cldr_runtime_locales`
-  - [ ] GenServer started via `Cldr.Locale.RuntimeStore.ensure_started/0`
-- [ ] Implement read path:
-  - [ ] `fetch_locale(backend, locale_name)` — check `:persistent_term`, then ETS
-  - [ ] Returns `{:ok, locale_data}` or `:error`
-  - [ ] Key format: `{backend, locale_name}` (atom)
-- [ ] Implement load path:
-  - [ ] `load_locale(backend, locale_name)` — full load pipeline
-  - [ ] Read JSON via existing `Cldr.Locale.Loader.read_locale_file!/1`
-  - [ ] Decode + transform (reuse `Cldr.Locale.Loader.do_get_locale/3` with `false` caching flag)
-  - [ ] Insert into ETS via `:ets.insert_new/2` (race-safe)
-  - [ ] Loser processes poll ETS until data appears (with timeout)
-  - [ ] Queue migration to background process
-- [ ] Implement migration path:
-  - [ ] Background GenServer receives `:migrate` messages
-  - [ ] `send_after` with configurable delay (default 0ms — batch immediately)
-  - [ ] Drains pending queue, reads from ETS, calls `:persistent_term.put/2`, deletes from ETS
-  - [ ] All pending locales promoted in a single GC sweep
-- [ ] Implement `unload_locale/2`:
-  - [ ] `:persistent_term.erase/1` + `:ets.delete/2`
-  - [ ] Returns `:ok` or `{:error, :not_found}`
+- [x] Create `lib/cldr/locale/runtime_store.ex` with module skeleton
+- [x] Implement ETS table lifecycle:
+  - [x] `init/1` — create named ETS table (`:set`, `:public`, `read_concurrency: true`)
+  - [x] Table name: `:cldr_runtime_locales`
+  - [x] GenServer started via `Cldr.Locale.RuntimeStore.ensure_started/0`
+- [x] Implement read path:
+  - [x] `fetch_locale(backend, locale_name)` — check `:persistent_term`, then ETS
+  - [x] Returns `{:ok, locale_data}` or `:error`
+  - [x] Key format: `{backend, locale_name}` (atom)
+- [x] Implement load path:
+  - [x] `load_locale(backend, locale_name)` — full load pipeline
+  - [x] Read JSON via existing `Cldr.Locale.Loader.read_locale_file!/1`
+  - [x] Decode + transform (reuse Loader transformation pipeline)
+  - [x] Insert into ETS via `:ets.insert_new/2` (race-safe)
+  - [x] Loser processes poll ETS until data appears (with timeout)
+  - [x] Queue migration to background process
+- [x] Implement migration path:
+  - [x] Background GenServer receives `:migrate` messages
+  - [x] `send_after` with configurable delay (default 0ms — batch immediately)
+  - [x] Drains pending queue, reads from ETS, calls `:persistent_term.put/2`, deletes from ETS
+  - [x] All pending locales promoted in a single GC sweep
+- [x] Implement `unload_locale/2`:
+  - [x] `:persistent_term.erase/1` + `:ets.delete/2`
+  - [x] Returns `:ok` or `{:error, :not_found}`
 
 ### Acceptance Criteria
 
-- [ ] `fetch_locale/2` returns `:error` for never-loaded locales
-- [ ] `load_locale/2` returns `{:ok, data}` with correct locale structure
-- [ ] `load_locale/2` is safe under concurrent calls (only one process loads)
-- [ ] After migration, `fetch_locale/2` hits `:persistent_term` (no ETS)
-- [ ] `unload_locale/2` removes from both `:persistent_term` and ETS
-- [ ] `known_loaded_locales/1` returns list of loaded locale atoms for a backend
-- [ ] `loaded?/2` returns boolean without loading
+- [x] `fetch_locale/2` returns `:error` for never-loaded locales
+- [x] `load_locale/2` returns `{:ok, data}` with correct locale structure
+- [x] `load_locale/2` is safe under concurrent calls (only one process loads)
+- [x] After migration, `fetch_locale/2` hits `:persistent_term` (no ETS)
+- [x] `unload_locale/2` removes from both `:persistent_term` and ETS
+- [x] `known_loaded_locales/1` returns list of loaded locale atoms for a backend
+- [x] `loaded?/2` returns boolean without loading
 
 ### Tests
 
-- [ ] `test/cldr/locale/runtime_store_test.exs`
-  - [ ] `fetch_locale/2` returns `:error` for unloaded locale
-  - [ ] `load_locale/2` loads locale and returns correct data shape
-  - [ ] `load_locale/2` twice is idempotent (no double load)
-  - [ ] Concurrent `load_locale/2` calls — only one loads, all get result
-  - [ ] After migration, `fetch_locale/2` returns data without ETS hit (verify via `:persistent_term.get/1`)
-  - [ ] `unload_locale/2` removes locale from all stores
-  - [ ] `known_loaded_locales/1` tracks loaded locales per backend
-  - [ ] `loaded?/2` returns correct boolean
-  - [ ] Loading non-existent locale file returns `{:error, :not_found}`
-  - [ ] Migration batches multiple locales into single operation
+- [x] `test/cldr/locale/runtime_store_test.exs`
+  - [x] `fetch_locale/2` returns `:error` for unloaded locale
+  - [x] `load_locale/2` loads locale and returns correct data shape
+  - [x] `load_locale/2` twice is idempotent (no double load)
+  - [x] Concurrent `load_locale/2` calls — only one loads, all get result
+  - [x] After migration, `fetch_locale/2` returns data without ETS hit (verify via `:persistent_term.get/1`)
+  - [x] `unload_locale/2` removes locale from all stores
+  - [x] `known_loaded_locales/1` tracks loaded locales per backend
+  - [x] `loaded?/2` returns correct boolean
+  - [x] Loading non-existent locale file returns `{:error, :not_found}`
+  - [x] Migration batches multiple locales into single operation
 
 ### Quality Gate
 
